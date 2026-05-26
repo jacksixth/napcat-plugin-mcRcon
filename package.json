@@ -1,5 +1,5 @@
 {
-  "name": "napcat-plugin-mc-rcon",
+  "name": "napcat-plugin-mcRcon",
   "plugin": "Minecraft RCON 管理",
   "version": "1.0.0",
   "type": "module",
@@ -20,7 +20,7 @@
       "工具"
     ],
     "minVersion": "4.14.0",
-    "homepage": "https://github.com/jacksixth/karin-plugin-mc-rcon"
+    "homepage": "https://github.com/jacksixth/napcat-plugin-mcRcon"
   },
   "dependencies": {
     "@minescope/mineping": "^1.6.1",

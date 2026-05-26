@@ -1,62 +1,38 @@
-# NapCat 插件开发模板
+# Minecraft RCON 管理插件
 
-一个快速开始 NapCat 插件开发的模板项目，基于实际生产项目架构提炼而成。
+通过 QQ 机器人管理 Minecraft 服务器，支持状态查询（Java / 基岩版）、RCON 命令执行、多服务器管理，提供 WebUI 可视化管理界面。
 
-## 📁 项目结构
+---
 
-```
-napcat-plugin-template/
-├── src/
-│   ├── index.ts              # 插件入口，导出生命周期函数
-│   ├── config.ts             # 配置定义和 WebUI Schema
-│   ├── types.ts              # TypeScript 类型定义
-│   ├── core/
-│   │   └── state.ts          # 全局状态管理单例
-│   ├── handlers/
-│   │   └── message-handler.ts # 消息处理器（命令解析、CD 冷却、消息工具）
-│   ├── services/
-│   │   └── api-service.ts    # WebUI API 路由（无认证模式）
-│   └── webui/                # React SPA 前端（独立构建）
-│       ├── index.html
-│       ├── package.json
-│       ├── vite.config.ts
-│       ├── tailwind.config.js
-│       ├── tsconfig.json
-│       └── src/
-│           ├── App.tsx           # 应用根组件，页面路由
-│           ├── main.tsx          # React 入口
-│           ├── index.css         # TailwindCSS + 自定义样式
-│           ├── types.ts          # 前端类型定义
-│           ├── vite-env.d.ts     # Vite 环境声明
-│           ├── utils/
-│           │   └── api.ts        # API 请求封装（noAuthFetch / authFetch）
-│           ├── hooks/
-│           │   ├── useStatus.ts  # 状态轮询 Hook
-│           │   ├── useTheme.ts   # 主题切换 Hook
-│           │   └── useToast.ts   # Toast 通知 Hook
-│           ├── components/
-│           │   ├── Sidebar.tsx       # 侧边栏导航
-│           │   ├── Header.tsx        # 页面头部
-│           │   ├── ToastContainer.tsx # Toast 通知容器
-│           │   └── icons.tsx         # SVG 图标组件
-│           └── pages/
-│               ├── StatusPage.tsx  # 仪表盘页面
-│               ├── ConfigPage.tsx  # 配置管理页面
-│               └── GroupsPage.tsx  # 群管理页面
-├── .github/
-│   ├── workflows/
-│   │   └── release.yml        # CI/CD 自动构建发布
-│   ├── prompt/
-│   │   ├── default.md             # 默认 Release Note 模板（回退用）
-│   │   └── ai-release-note.md     # （可选）AI Release Note 自定义 Prompt
-│   └── copilot-instructions.md  # Copilot 上下文说明
-├── package.json
-├── tsconfig.json
-├── vite.config.ts             # Vite 构建配置（含资源复制插件）
-└── README.md
-```
+## 功能概览
 
-## 🚀 快速开始
+### QQ 群聊命令
+
+| 命令 | 说明 | 权限 |
+|------|------|------|
+| `服务器状态` | 快捷查询所有服务器状态（无需前缀） | 所有人 |
+| `#mr help` | 查看帮助信息 | 所有人 |
+| `#mr motd <host>:<port>` | 查询指定服务器状态（支持 Java / 基岩版） | 所有人 |
+| `#mr server list` | 列出所有已配置的服务器及在线玩家 | 所有人 |
+| `#mr rcon <alias> <命令>` | 向指定服务器发送 RCON 命令 | 管理员 |
+| `#mr rcon ALL <命令>` | 向所有服务器广播 RCON 命令 | 管理员 |
+
+> 命令前缀默认为 `#mr`，可在 WebUI 配置中修改。
+
+### 核心特性
+
+- **MOTD 服务器状态查询** — 支持 Java 版和基岩版 Minecraft 服务器，返回版本号、在线人数、MOTD 描述、服务器图标
+- **RCON 远程命令执行** — 支持单服务器执行和 ALL 全服广播，管理员专属
+- **多服务器管理** — 可配置多个 Minecraft 服务器，通过别名区分
+- **WebUI 可视化管理** — 内嵌 React 前端面板，支持仪表盘、配置管理、服务器管理、群管理
+- **分群启用控制** — 可按群单独开关插件功能
+- **合并转发消息** — 服务器列表等长文本以合并转发卡片形式发送，简洁美观
+- **并发控制** — 服务器列表查询和 RCON 命令执行均自带并发锁，防止重复触发
+- **运行时统计** — 记录消息处理数量、运行时长等指标
+
+---
+
+## 快速开始
 
 ### 1. 安装依赖
 
@@ -64,139 +40,153 @@ napcat-plugin-template/
 pnpm install
 ```
 
-### 2. 修改插件信息
+### 2. 配置服务器
 
-编辑 `package.json`，修改以下字段：
+插件安装后，在 NapCat WebUI 中打开本插件的「扩展页面」，进入「服务器管理」标签页，添加你的 Minecraft 服务器：
 
-```json
-{
-    "name": "napcat-plugin-your-name",
-    "description": "你的插件描述",
-    "author": "你的名字"
-}
-```
+- **别名**：服务器的唯一标识（用于 `#mr rcon <alias>` 命令）
+- **地址**：服务器 IP 或域名
+- **游戏端口**：Java 版默认 25565，基岩版默认 19132
+- **RCON 端口**：默认 25575
+- **RCON 密码**：需与服务器 `server.properties` 中的 `rcon.password` 一致
 
-### 3. 开发你的功能
+> 使用 RCON 功能前，请确保 Minecraft 服务器已开启 RCON（`server.properties` 中设置 `enable-rcon=true`）。
 
-- **添加配置项**: 编辑 `src/types.ts` 和 `src/config.ts`
-- **消息处理**: 编辑 `src/handlers/message-handler.ts`
-- **API 路由**: 编辑 `src/services/api-service.ts`
-- **状态管理**: 编辑 `src/core/state.ts`
-- **WebUI 页面**: 编辑 `src/webui/src/pages/` 下的页面组件
-- **WebUI 类型**: 同步更新 `src/webui/src/types.ts` 中的前端类型
-
-### 4. 构建 & 开发
+### 3. 构建
 
 ```bash
-# 完整构建（自动构建 WebUI 前端 + 后端 + 资源复制，一步完成）
+# 完整构建（后端 + WebUI 前端，一步完成）
 pnpm run build
+```
 
-# 仅构建 WebUI 前端（不构建后端）
-pnpm run build:webui
+构建产物在 `dist/` 目录下，将整个 `dist/` 文件夹放入 NapCat 的 `plugins/` 目录即可。
 
-# WebUI 前端开发服务器（实时预览，推荐纯前端开发时使用）
-pnpm run dev:webui
+---
+
+## 项目结构
+
+```
+napcat-plugin-mcRcon/
+├── src/
+│   ├── index.ts                 # 插件入口，生命周期钩子 + 路由注册
+│   ├── config.ts                # 默认配置 & WebUI 配置 Schema
+│   ├── types.ts                 # TypeScript 类型定义
+│   ├── core/
+│   │   └── state.ts             # 全局状态单例（配置、统计、定时器）
+│   ├── handlers/
+│   │   └── message-handler.ts   # QQ 消息处理（命令解析、RCON/MOTD/帮助）
+│   ├── services/
+│   │   ├── api-service.ts       # WebUI API 路由
+│   │   ├── motd-service.ts      # MOTD 服务器查询（Java + 基岩版）
+│   │   └── rcon-service.ts      # RCON 客户端封装
+│   └── webui/                   # React + TailwindCSS 前端
+│       └── src/
+│           ├── pages/
+│           │   ├── StatusPage.tsx    # 仪表盘
+│           │   ├── ConfigPage.tsx    # 配置管理
+│           │   ├── ServersPage.tsx   # 服务器管理
+│           │   └── GroupsPage.tsx    # 群管理
+│           ├── components/
+│           │   ├── Sidebar.tsx
+│           │   ├── Header.tsx
+│           │   └── ServerFormModal.tsx
+│           └── hooks/           # useStatus / useTheme / useToast
+├── package.json
+├── tsconfig.json
+├── vite.config.ts
+└── README.md
+```
+
+---
+
+## 命令详解
+
+### `服务器状态` — 快捷查询
+
+直接发送「服务器状态」四个字（无需前缀），自动查询所有已配置服务器的状态，以合并转发消息展示。
+
+### `#mr motd <host>:<port>` — 服务器探测
+
+实时查询任意 Minecraft 服务器的基本信息。先尝试 Java 版协议，失败后自动回退到基岩版协议。
+
+```
+#mr motd mc.hypixel.net:25565
+#mr motd play.example.com   （省略端口则默认 25565）
+```
+
+返回信息包括：服务器类型、版本号、在线人数、MOTD 描述、服务器图标。
+
+### `#mr server list` — 服务器列表
+
+列出所有已配置的服务器，每条包含：MOTD 信息、在线人数，并尝试通过 RCON 获取在线玩家名单。
+
+### `#mr rcon <alias> <命令>` — RCON 执行
+
+向指定服务器发送任意 RCON 命令（仅群管理员/群主可用）。
+
+```
+#mr rcon survival say 大家好
+#mr rcon creative whitelist add PlayerName
+#mr rcon survival ban BadPlayer 违规行为
+```
+
+### `#mr rcon ALL <命令>` — 全服广播
+
+向所有已配置服务器发送同一条 RCON 命令，结果以合并转发消息汇总展示。
+
+```
+#mr rcon ALL say 服务器将在5分钟后重启
+```
+
+---
+
+## WebUI 面板
+
+插件内置 React 前端管理面板，通过 NapCat WebUI 侧边栏访问。
+
+| 页面 | 功能 |
+|------|------|
+| 仪表盘 | 插件运行状态、处理消息数、运行时长 |
+| 配置管理 | 全局开关、命令前缀、调试模式 |
+| 服务器管理 | 增删改查 Minecraft 服务器配置 |
+| 群管理 | 查看群列表，按群启用/禁用插件 |
+
+---
+
+## 开发
+
+```bash
+# 安装依赖
+pnpm install
 
 # 类型检查
 pnpm run typecheck
-```
 
-### 5. 调试 & 热重载
+# 完整构建
+pnpm run build
 
-项目通过 Vite 插件 `napcatHmrPlugin` 集成了热重载能力（已在 `vite.config.ts` 中配置），需要在 NapCat 端安装 `napcat-plugin-debug` 插件并启用。
-
-```bash
-# 一键部署：构建 → 自动复制到远程插件目录 → 自动重载
-pnpm run deploy
-
-# 开发模式：watch 构建 + 每次构建后自动部署 + 热重载（单进程）
+# 开发模式（watch + 热重载，需安装 napcat-plugin-debug）
 pnpm run dev
+
+# 仅前端开发（实时预览）
+pnpm run dev:webui
 ```
 
-> `deploy` = `vite build`（构建完成时 Vite 插件自动部署+重载）  
-> `dev` = `vite build --watch`（每次重新构建后 Vite 插件自动部署+重载）
+---
 
-> **注意**：`pnpm run dev` 仅监听**插件后端**（`src/` 下非 webui 的文件）的变化。修改 WebUI 前端代码后，随便改动一下后端文件即可触发重新构建（每次后端构建时会自动构建并部署 WebUI）。
->
-> 如果只开发 WebUI 前端，推荐使用 `pnpm run dev:webui` 启动前端开发服务器，可实时预览。
+## 依赖
 
-`vite.config.ts` 中的 `copyAssetsPlugin` 会在每次构建时自动构建 WebUI 前端并复制产物，`napcatHmrPlugin()` 会自动连接调试服务 → 复制 dist/ 到远程 → 调用 reloadPlugin。
-
-如需自定义调试服务地址或 token：
-
-```typescript
-// vite.config.ts
-napcatHmrPlugin({
-  wsUrl: 'ws://192.168.1.100:8998',
-  token: 'mySecret',
-})
-```
-
-**CLI 交互模式（可选）：**
-
-```bash
-# 独立运行 CLI，进入交互模式（REPL）
-npx napcat-debug
-
-# 交互命令
-debug> list              # 列出所有插件
-debug> deploy            # 部署当前目录插件
-debug> reload <id>       # 重载指定插件
-debug> status            # 查看服务状态
-```
-
-构建产物在 `dist/` 目录下：
-
-```
-dist/
-├── index.mjs           # 插件主入口（Vite 打包）
-├── package.json        # 清理后的 package.json
-└── webui/              # React SPA 构建产物
-    └── index.html      # 单文件 SPA（vite-plugin-singlefile）
-```
-
-## 📖 架构说明
-
-### 分层架构
-
-```mermaid
-graph TD
-    Entry["index.ts (入口)<br/>生命周期钩子 + WebUI 路由/静态资源注册 + 事件分发"]
-    Entry --> Handlers["Handlers<br/>消息处理入口"]
-    Entry --> Services["Services<br/>业务逻辑"]
-    Entry --> WebUI["WebUI<br/>前端界面"]
-    Handlers --> State["core/state<br/>全局状态单例"]
-    Services --> State
-```
-
-### 核心设计模式
-
-| 模式 | 实现位置 | 说明 |
-|------|----------|------|
-| 单例状态 | `src/core/state.ts` | `pluginState` 全局单例，持有 ctx、config、logger |
-| 服务分层 | `src/services/*.ts` | 按职责拆分业务逻辑 |
-| 配置校验 | `sanitizeConfig()` | 类型安全的运行时配置验证 |
-| CD 冷却 | `cooldownMap` | `Map<groupId:command, expireTimestamp>` |
-
-## 🔧 生命周期函数
-
-| 导出 | 说明 |
+| 包 | 用途 |
 |------|------|
-| `plugin_init` | 插件初始化，加载配置、注册路由 |
-| `plugin_onmessage` | 消息事件处理 |
-| `plugin_cleanup` | 插件卸载，清理资源 |
-| `plugin_config_ui` | WebUI 配置 Schema |
-| `plugin_get_config` | 获取配置 |
-| `plugin_set_config` | 设置配置 |
-| `plugin_on_config_change` | 配置变更回调 |
+| [`@minescope/mineping`](https://www.npmjs.com/package/@minescope/mineping) | Minecraft 服务器 MOTD 查询（Java + 基岩版） |
+| [`rcon-client`](https://www.npmjs.com/package/rcon-client) | Minecraft RCON 协议客户端 |
+| [`napcat-types`](https://www.npmjs.com/package/napcat-types) | NapCat 插件类型定义 |
 
-## 🌐 WebUI API 路由
+---
 
-模板使用 **无认证路由**（`router.getNoAuth` / `router.postNoAuth`），适用于插件自带的 WebUI 页面调用。
+## License
 
-> NapCat 路由器提供两种注册方式：
-> - `router.get` / `router.post`：需要 NapCat WebUI 登录认证
-> - `router.getNoAuth` / `router.postNoAuth`：无需认证，插件 WebUI 页面可直接调用
+GPL-3.0
 
 ### 内置 API 接口
 
