@@ -10,10 +10,10 @@ import type { PluginConfig } from './types';
 export const DEFAULT_CONFIG: PluginConfig = {
     enabled: true,
     debug: false,
-    commandPrefix: '#cmd',
+    commandPrefix: '#mr',
     cooldownSeconds: 60,
+    servers: [],
     groupConfigs: {},
-    // TODO: 在这里添加你的默认配置值
 };
 
 /**
@@ -34,8 +34,8 @@ export function buildConfigSchema(ctx: NapCatPluginContext): PluginConfigSchema 
         // 插件信息头部
         ctx.NapCatConfig.html(`
             <div style="padding: 16px; background: #FB7299; border-radius: 12px; margin-bottom: 20px; color: white;">
-                <h3 style="margin: 0 0 6px 0; font-size: 18px; font-weight: 600;">插件模板</h3>
-                <p style="margin: 0; font-size: 13px; opacity: 0.85;">NapCat 插件开发模板，请根据需要修改配置</p>
+                <h3 style="margin: 0 0 6px 0; font-size: 18px; font-weight: 600;">Minecraft RCON 管理</h3>
+                <p style="margin: 0; font-size: 13px; opacity: 0.85;">通过 QQ 机器人管理 Minecraft 服务器，支持状态查询、RCON 命令执行、玩家绑定/封禁/白名单管理</p>
             </div>
         `),
         // 全局开关
@@ -43,9 +43,14 @@ export function buildConfigSchema(ctx: NapCatPluginContext): PluginConfigSchema 
         // 调试模式
         ctx.NapCatConfig.boolean('debug', '调试模式', false, '启用后将输出详细的调试日志'),
         // 命令前缀
-        ctx.NapCatConfig.text('commandPrefix', '命令前缀', '#cmd', '触发命令的前缀，默认为 #cmd'),
-        // 冷却时间
-        ctx.NapCatConfig.number('cooldownSeconds', '冷却时间（秒）', 60, '同一命令请求冷却时间，0 表示不限制')
-        // TODO: 在这里添加你的配置项
+        ctx.NapCatConfig.text('commandPrefix', '命令前缀', '#mr', '触发命令的前缀，默认为 #mr（例如：#mr help）'),
+        // 服务器配置说明
+        ctx.NapCatConfig.html(`
+            <div style="padding: 12px; background: #f0f9ff; border-left: 4px solid #0ea5e9; border-radius: 6px; margin: 16px 0;">
+                <p style="margin: 0; font-size: 13px; color: #0369a1;">
+                    <strong>服务器配置：</strong>请在 NapCat 扩展页面中编辑插件服务器信息来添加/修改服务器。
+                </p>
+            </div>
+        `)
     );
 }

@@ -12,13 +12,21 @@ export interface PluginStatus {
     }
 }
 
+export interface ServerConfig {
+    alias: string
+    host: string
+    port: string
+    rconPort: string
+    password: string
+}
+
 export interface PluginConfig {
     enabled: boolean
     debug: boolean
     commandPrefix: string
     cooldownSeconds: number
+    servers: ServerConfig[]
     groupConfigs?: Record<string, GroupConfig>
-    // TODO: 在这里添加你的插件配置项类型
 }
 
 export interface GroupConfig {
