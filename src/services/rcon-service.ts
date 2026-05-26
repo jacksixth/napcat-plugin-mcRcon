@@ -17,6 +17,10 @@ export async function sendRconCommand(
     server: ServerConfig,
     command: string
 ): Promise<string> {
+    if (!server.password) {
+        throw new Error('未填写rcon密码');
+    }
+
     const rcon = new Rcon({
         host: server.host,
         port: parseInt(server.rconPort),

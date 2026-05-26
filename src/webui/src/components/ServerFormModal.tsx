@@ -34,7 +34,7 @@ export default function ServerFormModal({ isOpen, onClose, onSubmit, initialData
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
-        if (!formData.alias.trim() || !formData.host.trim() || !formData.password.trim()) {
+        if (!formData.alias.trim() || !formData.host.trim()) {
             return
         }
         onSubmit(formData)
@@ -70,7 +70,7 @@ export default function ServerFormModal({ isOpen, onClose, onSubmit, initialData
                             required
                             value={formData.alias}
                             onChange={(e) => setFormData({ ...formData, alias: e.target.value })}
-                            placeholder="例如：主服、生存服"
+                            placeholder="例如：ATM10、GTNH、原版服"
                             className="input-field"
                         />
                         <p className="text-xs text-gray-400 mt-1">用于标识服务器的唯一名称</p>
@@ -119,17 +119,16 @@ export default function ServerFormModal({ isOpen, onClose, onSubmit, initialData
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                            RCON 密码 <span className="text-red-500">*</span>
+                            RCON 密码
                         </label>
                         <input
                             type="password"
-                            required
                             value={formData.password}
                             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                            placeholder="输入 RCON 密码"
+                            placeholder="输入 RCON 密码（可选）"
                             className="input-field"
                         />
-                        <p className="text-xs text-gray-400 mt-1">确保已在 server.properties 中启用 RCON</p>
+                        <p className="text-xs text-gray-400 mt-1">确保已在 server.properties 中启用 RCON，不填写则无法使用 RCON 功能</p>
                     </div>
 
                     {/* Actions */}

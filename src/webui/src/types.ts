@@ -17,7 +17,7 @@ export interface ServerConfig {
     host: string
     port: string
     rconPort: string
-    password: string
+    password?: string
 }
 
 export interface PluginConfig {

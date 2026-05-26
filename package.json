@@ -1,7 +1,7 @@
 {
   "name": "napcat-plugin-mcRcon",
   "plugin": "Minecraft RCON 管理",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "main": "index.mjs",
   "description": "通过 QQ 机器人管理 Minecraft 服务器，支持状态查询、RCON 命令执行",

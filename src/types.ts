@@ -21,8 +21,8 @@ export interface ServerConfig {
     port: string;
     /** RCON 端口（默认 25575） */
     rconPort: string;
-    /** RCON 密码 */
-    password: string;
+    /** RCON 密码（可选，不填则无法使用 RCON 功能） */
+    password?: string;
 }
 
 /**

@@ -427,10 +427,11 @@ async function handleServerList(
                 })
               }
             }
-          } catch {
+          } catch (e: unknown) {
+            const errMsg = e instanceof Error ? e.message : String(e)
             msgList.push({
               type: "text",
-              data: { text: "获取在线玩家数据失败\n" },
+              data: { text: errMsg === '未填写rcon密码' ? '未填写rcon密码\n' : "获取在线玩家数据失败\n" },
             })
           }
         } else {
@@ -504,9 +505,10 @@ async function handleRcon(
             data: { text: `(≧▽≦) 执行结果：${res}\n` },
           })
         } catch (error) {
+          const errMsg = error instanceof Error ? error.message : String(error)
           msgList.push({
             type: "text",
-            data: { text: `(；′⌒\`) 执行失败: ${error}\n` },
+            data: { text: errMsg === '未填写rcon密码' ? '未填写rcon密码\n' : `(；′⌒\`) 执行失败: ${error}\n` },
           })
         }
 
@@ -532,7 +534,8 @@ async function handleRcon(
         const res = await sendRconCommand(server, command)
         await sendReply(ctx, event, `(≧▽≦) ${server.alias} 执行成功：${res}`)
       } catch (error) {
-        await sendReply(ctx, event, `(；′⌒\`) ${server.alias} 执行失败: ${error}`)
+        const errMsg = error instanceof Error ? error.message : String(error)
+        await sendReply(ctx, event, errMsg === '未填写rcon密码' ? `(；′⌒\`) ${server.alias} 未填写rcon密码` : `(；′⌒\`) ${server.alias} 执行失败: ${error}`)
       }
     }
   } finally {
